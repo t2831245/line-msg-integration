@@ -22,3 +22,6 @@ http://localhost:8080/msg
 get
 http://localhost:8080/msg?userId=lineUserId
 ```
+
+MongoDB line official dev account QRCode path
+```./qrcode.png```
