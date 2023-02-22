@@ -1,7 +1,8 @@
 package com.demo.service;
 
 import com.demo.entity.MsgRecord;
-import com.demo.entity.input.PushMsgRequest;
+import com.demo.entity.PushMsgRequest;
+import com.demo.exception.UnauthorizedException;
 import com.demo.repository.MsgRecordRepository;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.model.PushMessage;
@@ -19,15 +20,15 @@ import java.util.concurrent.ExecutionException;
 @Service
 public class MsgService {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final MsgRecordRepository msgRecordReoisitory;
+    private final MsgRecordRepository msgRecordRepository;
 
     @Value("${line.bot.channel-token}")
     private String channelToken;
 
-    public MsgService(MsgRecordRepository msgRecordReoisitory) {
-        this.msgRecordReoisitory = msgRecordReoisitory;
+    public MsgService(MsgRecordRepository msgRecordRepository) {
+        this.msgRecordRepository = msgRecordRepository;
     }
 
     public void pushMessage(PushMsgRequest request) {
@@ -46,23 +47,26 @@ public class MsgService {
             botApiResponse = client.pushMessage(pushMessage).get();
         } catch (InterruptedException | ExecutionException e) {
             logger.warn(e.toString());
-            return;
+            throw new UnauthorizedException("token invalidate.");
         }
         logger.debug("push success! ", botApiResponse.toString());
     }
 
     public void insertRecord(MessageEvent messageEvent) {
 
-        msgRecordReoisitory.insert(
+        msgRecordRepository.insert(
                 MsgRecord.builder()
                         .userId(messageEvent.getSource().getUserId())
                         .content(messageEvent.getMessage())
                         .timestamp(messageEvent.getTimestamp())
+                        .eventMode(messageEvent.getMode())
+                        .webhookEventId(messageEvent.getWebhookEventId())
+                        .deliveryContext(messageEvent.getDeliveryContext())
                         .build()
         );
     }
 
     public List<MsgRecord> findByUserId(String userId) {
-        return msgRecordReoisitory.findByUserId(userId);
+        return msgRecordRepository.findByUserId(userId);
     }
 }
