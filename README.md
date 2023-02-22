@@ -3,6 +3,7 @@
 #### Setting
 * set environment variables:
 lineKey=xxxxxx;lineSecret=oooooo
+* tool bar -> run -> edit configurations -> environment variables
 
 #### Implement functions
 * receive message from line webhook, save the user info and message in MongoDB
